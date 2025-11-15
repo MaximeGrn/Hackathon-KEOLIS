@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Positions temps réel des trams - Dijon</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Feuille de style personnalisée -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚊 Positions temps réel des trams - Dijon</h1>
+            <div class="controls">
+                <button id="updateBtn" class="update-button">Mettre à jour les positions des trams</button>
+                <button id="autoUpdateBtn" class="auto-update-button">Activer la mise à jour automatique</button>
+            </div>
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="mapStyle">Fond de carte :</label>
+                    <select id="mapStyle" class="map-style-select">
+                        <option value="osm">OpenStreetMap</option>
+                        <option value="carto">CartoDB</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Lignes visibles :</label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggleT1" checked>
+                        <span class="line-indicator line-t1">T1</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggleT2" checked>
+                        <span class="line-indicator line-t2">T2</span>
+                    </label>
+                </div>
+            </div>
+        </header>
+        
+        <div id="map"></div>
+        
+        <div id="status" class="status"></div>
+    </div>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Script principal -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
+
