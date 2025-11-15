@@ -18,6 +18,7 @@
             <div class="controls">
                 <button id="updateBtn" class="update-button">Mettre à jour les positions des trams</button>
                 <button id="autoUpdateBtn" class="auto-update-button">Activer la mise à jour automatique</button>
+                <div id="lastUpdate" class="last-update">Dernière mise à jour : -</div>
             </div>
             <div class="filters">
                 <div class="filter-group">
@@ -36,6 +37,12 @@
                     <label class="checkbox-label">
                         <input type="checkbox" id="toggleT2" checked>
                         <span class="line-indicator line-t2">T2</span>
+                    </label>
+                </div>
+                <div class="filter-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggleStops" checked>
+                        <span>Afficher les arrêts</span>
                     </label>
                 </div>
             </div>

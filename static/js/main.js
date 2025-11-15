@@ -4,11 +4,13 @@
 
 // Initialiser la carte après le chargement complet du DOM
 let map;
-let markers = [];
+let markers = []; // Stocker les marqueurs avec leurs infos (ligne, etc.)
+let stopMarkers = []; // Stocker les marqueurs des arrêts
 let lineLayers = []; // Stocker les couches de lignes GeoJSON avec leurs infos
 let currentTileLayer = null; // Couche de tuiles actuelle
 let autoUpdateInterval = null; // Intervalle pour la mise à jour automatique
 let lineVisibility = { T1: true, T2: true }; // État de visibilité des lignes
+let stopsVisible = true; // État de visibilité des arrêts
 
 // Attendre que le DOM soit chargé avant d'initialiser la carte
 document.addEventListener('DOMContentLoaded', function() {
@@ -37,6 +39,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Charger les lignes de tram au démarrage
     loadTramLines();
+    
+    // Charger les arrêts de tram au démarrage
+    loadTramStops();
 });
 
 /**
@@ -78,6 +83,14 @@ function initApp() {
     if (toggleT2) {
         toggleT2.addEventListener('change', function(e) {
             toggleLineVisibility('T2', e.target.checked);
+        });
+    }
+    
+    // Écouter le changement de la checkbox des arrêts
+    const toggleStops = document.getElementById('toggleStops');
+    if (toggleStops) {
+        toggleStops.addEventListener('change', function(e) {
+            toggleStopsVisibility(e.target.checked);
         });
     }
 }
@@ -149,12 +162,67 @@ function toggleAutoUpdate() {
 }
 
 /**
- * Masque ou affiche une ligne de tram
+ * Crée une icône SVG personnalisée pour un tram
+ */
+function createTramIcon(color) {
+    // Générer un ID unique pour le filtre basé sur la couleur
+    const filterId = 'shadow-' + color.replace('#', '');
+    
+    // Créer un SVG avec le fond coloré en forme de pin et l'icône de tram au centre
+    const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="60" viewBox="0 0 48 60">
+            <!-- Forme du pin (goutte) -->
+            <defs>
+                <filter id="${filterId}" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+                    <feOffset dx="0" dy="2" result="offsetblur"/>
+                    <feComponentTransfer>
+                        <feFuncA type="linear" slope="0.3"/>
+                    </feComponentTransfer>
+                    <feMerge>
+                        <feMergeNode/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            <!-- Fond du pin coloré -->
+            <path d="M24 4 C16 4, 4 12, 4 24 C4 36, 24 56, 24 56 C24 56, 44 36, 44 24 C44 12, 32 4, 24 4 Z" 
+                  fill="${color}" 
+                  stroke="white" 
+                  stroke-width="2"
+                  filter="url(#${filterId})"/>
+            <!-- Icône de tram centrée (24x24 au centre du pin) -->
+            <g transform="translate(12, 10)">
+                <rect width="16" height="16" x="4" y="3" rx="2" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4 11h16" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M12 3v8" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="m8 19-2 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="m18 22-2-3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="9" cy="15" r="0.8" fill="white"/>
+                <circle cx="17" cy="15" r="0.8" fill="white"/>
+            </g>
+        </svg>
+    `;
+    
+    // Créer une URL de données pour le SVG
+    const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+    const svgUrl = URL.createObjectURL(svgBlob);
+    
+    return L.icon({
+        iconUrl: svgUrl,
+        iconSize: [48, 60],
+        iconAnchor: [24, 60],
+        popupAnchor: [0, -60]
+    });
+}
+
+/**
+ * Masque ou affiche une ligne de tram (lignes + véhicules)
  */
 function toggleLineVisibility(lineName, visible) {
     lineVisibility[lineName] = visible;
     
-    // Parcourir toutes les couches de lignes
+    // Masquer/afficher les lignes
     lineLayers.forEach(layerInfo => {
         if (layerInfo.lineName === lineName) {
             if (visible) {
@@ -164,6 +232,93 @@ function toggleLineVisibility(lineName, visible) {
             }
         }
     });
+    
+    // Masquer/afficher les marqueurs des véhicules de cette ligne
+    markers.forEach(markerInfo => {
+        if (markerInfo.lineName === lineName) {
+            if (visible) {
+                markerInfo.marker.addTo(map);
+            } else {
+                map.removeLayer(markerInfo.marker);
+            }
+        }
+    });
+}
+
+/**
+ * Masque ou affiche les arrêts de tram
+ */
+function toggleStopsVisibility(visible) {
+    stopsVisible = visible;
+    
+    stopMarkers.forEach(markerInfo => {
+        if (visible) {
+            markerInfo.marker.addTo(map);
+        } else {
+            map.removeLayer(markerInfo.marker);
+        }
+    });
+}
+
+/**
+ * Charge et affiche les arrêts de tram depuis l'API
+ */
+async function loadTramStops() {
+    try {
+        const response = await fetch('/api/tram-stops');
+        const data = await response.json();
+        
+        if (data.error) {
+            console.error('Erreur lors du chargement des arrêts:', data.error);
+            return;
+        }
+        
+        // Supprimer les anciens marqueurs d'arrêts
+        stopMarkers.forEach(markerInfo => map.removeLayer(markerInfo.marker));
+        stopMarkers = [];
+        
+        // Créer un marqueur pour chaque arrêt
+        data.stops.forEach(stop => {
+            // Créer une icône pour les arrêts (cercle simple)
+            const stopIcon = L.divIcon({
+                className: 'tram-stop-icon',
+                html: `<div class="stop-marker" style="background-color: #3498db; border: 2px solid white; border-radius: 50%; width: 12px; height: 12px;"></div>`,
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+            });
+            
+            const marker = L.marker([stop.stop_lat, stop.stop_lon], {
+                icon: stopIcon
+            });
+            
+            // Créer le contenu du popup
+            const wheelchairIcon = stop.wheelchair_boarding === 1 ? '♿' : '';
+            const popupContent = `
+                <div class="popup-content">
+                    <h3>${stop.stop_name} ${wheelchairIcon}</h3>
+                    <p><strong>Code:</strong> ${stop.stop_code || 'N/A'}</p>
+                    <p><strong>ID:</strong> ${stop.stop_id}</p>
+                </div>
+            `;
+            
+            marker.bindPopup(popupContent);
+            
+            // Ajouter le marqueur seulement si les arrêts sont visibles
+            if (stopsVisible) {
+                marker.addTo(map);
+            }
+            
+            stopMarkers.push({
+                marker: marker,
+                stop: stop
+            });
+        });
+        
+        console.log(`${stopMarkers.length} arrêt(s) de tram chargé(s)`);
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement des arrêts:', error);
+    }
 }
 
 /**
@@ -173,6 +328,20 @@ function formatTimestamp(timestamp) {
     if (!timestamp) return 'N/A';
     const date = new Date(timestamp * 1000);
     return date.toLocaleTimeString('fr-FR');
+}
+
+/**
+ * Met à jour l'affichage de la dernière mise à jour
+ */
+function updateLastUpdateTime() {
+    const lastUpdateDiv = document.getElementById('lastUpdate');
+    if (lastUpdateDiv) {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        lastUpdateDiv.textContent = `Dernière mise à jour : ${hours}h${minutes}min${seconds}s`;
+    }
 }
 
 /**
@@ -220,7 +389,13 @@ async function updateVehicles() {
         }
         
         // Supprimer les anciens marqueurs
-        markers.forEach(marker => map.removeLayer(marker));
+        markers.forEach(markerInfo => {
+            map.removeLayer(markerInfo.marker);
+            // Libérer l'URL de l'icône SVG si elle existe
+            if (markerInfo.marker.options.icon && markerInfo.marker.options.icon.options.iconUrl) {
+                URL.revokeObjectURL(markerInfo.marker.options.icon.options.iconUrl);
+            }
+        });
         markers = [];
         
         // Ajouter les nouveaux marqueurs
@@ -235,25 +410,25 @@ async function updateVehicles() {
             });
             
             filteredVehicles.forEach(vehicle => {
-                // Déterminer la couleur du marqueur selon la ligne
+                // Déterminer la ligne et la couleur du marqueur
                 const routeId = vehicle.route_id || '';
-                let iconColor = 'blue';
+                let lineName = '';
+                let iconColor = '#3498db'; // Bleu par défaut
+                
                 if (routeId.includes('T1')) {
-                    iconColor = 'red'; // Rouge pour T1
+                    lineName = 'T1';
+                    iconColor = '#e74c3c'; // Rouge pour T1
                 } else if (routeId.includes('T2')) {
-                    iconColor = 'green'; // Vert pour T2
+                    lineName = 'T2';
+                    iconColor = '#27ae60'; // Vert pour T2
                 }
+                
+                // Créer une icône SVG personnalisée avec le tram
+                const tramIcon = createTramIcon(iconColor);
                 
                 // Créer un marqueur pour chaque véhicule
                 const marker = L.marker([vehicle.latitude, vehicle.longitude], {
-                    icon: L.icon({
-                        iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${iconColor}.png`,
-                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-                        iconSize: [25, 41],
-                        iconAnchor: [12, 41],
-                        popupAnchor: [1, -34],
-                        shadowSize: [41, 41]
-                    })
+                    icon: tramIcon
                 });
                 
                 // Créer le contenu du popup avec les informations du véhicule
@@ -271,8 +446,17 @@ async function updateVehicles() {
                 `;
                 
                 marker.bindPopup(popupContent);
-                marker.addTo(map);
-                markers.push(marker);
+                
+                // Ajouter le marqueur seulement si la ligne est visible
+                if (lineVisibility[lineName]) {
+                    marker.addTo(map);
+                }
+                
+                // Stocker le marqueur avec ses informations (ligne, etc.)
+                markers.push({
+                    marker: marker,
+                    lineName: lineName
+                });
             });
             
             if (statusDiv) {
@@ -280,6 +464,9 @@ async function updateVehicles() {
                 statusDiv.textContent = `${filteredVehicles.length} véhicule(s) T1/T2 affiché(s) sur la carte.${autoText}`;
                 statusDiv.className = 'status success';
             }
+            
+            // Mettre à jour l'horodatage de la dernière mise à jour
+            updateLastUpdateTime();
         }
         
     } catch (error) {

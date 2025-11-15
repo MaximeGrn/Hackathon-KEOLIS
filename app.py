@@ -9,14 +9,21 @@ from google.transit import gtfs_realtime_pb2
 from datetime import datetime
 import json
 import os
+import csv
 
 app = Flask(__name__)
 
 # URL du flux GTFS-RT pour les positions des véhicules Divia Dijon
 GTFS_RT_URL = "https://proxy.transport.data.gouv.fr/resource/divia-dijon-gtfs-rt-vehicle-position"
 
+# URL du flux GTFS-RT pour les mises à jour de trajets (trip-update)
+GTFS_RT_TRIP_UPDATE_URL = "https://proxy.transport.data.gouv.fr/resource/divia-dijon-gtfs-rt-trip-update"
+
 # Chemin vers le fichier GeoJSON des lignes
 GEOJSON_PATH = os.path.join(os.path.dirname(__file__), 'Ressources', 'Lignes.geojson')
+
+# Chemin vers le fichier des arrêts
+STOPS_PATH = os.path.join(os.path.dirname(__file__), 'Ressources', 'stops.txt')
 
 
 @app.route('/')
@@ -66,6 +73,67 @@ def get_lines():
         return jsonify({"error": "Fichier GeoJSON introuvable"}), 404
     except Exception as e:
         return jsonify({"error": f"Erreur lors de la lecture du GeoJSON: {str(e)}"}), 500
+
+
+@app.route('/api/tram-stops')
+def get_tram_stops():
+    """
+    Route API : récupère les stopId des lignes T1/T2 depuis trip-update,
+    puis filtre et renvoie les arrêts de tram depuis stops.txt
+    """
+    try:
+        # Étape 1 : Télécharger et décoder le flux trip-update
+        response = requests.get(GTFS_RT_TRIP_UPDATE_URL, timeout=10)
+        response.raise_for_status()
+        
+        # Parser le message GTFS-RT trip-update
+        feed = gtfs_realtime_pb2.FeedMessage()
+        feed.ParseFromString(response.content)
+        
+        # Étape 2 : Extraire tous les stopId des entités T1 et T2
+        tram_stop_ids = set()
+        
+        for entity in feed.entity:
+            if entity.HasField('trip_update'):
+                trip_update = entity.trip_update
+                entity_id = entity.id
+                
+                # Vérifier si c'est une ligne T1 ou T2
+                if 'T1' in entity_id or 'T2' in entity_id:
+                    # Parcourir tous les stopTimeUpdate pour récupérer les stopId
+                    for stop_time_update in trip_update.stop_time_update:
+                        if stop_time_update.HasField('stop_id'):
+                            tram_stop_ids.add(stop_time_update.stop_id)
+        
+        # Étape 3 : Lire le fichier stops.txt et filtrer les arrêts de tram
+        tram_stops = []
+        
+        if not os.path.exists(STOPS_PATH):
+            return jsonify({"error": "Fichier stops.txt introuvable"}), 404
+        
+        with open(STOPS_PATH, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                stop_id = row.get('stop_id', '').strip()
+                if stop_id in tram_stop_ids:
+                    tram_stops.append({
+                        'stop_id': stop_id,
+                        'stop_code': row.get('stop_code', '').strip(),
+                        'stop_name': row.get('stop_name', '').strip(),
+                        'stop_lat': float(row.get('stop_lat', 0)),
+                        'stop_lon': float(row.get('stop_lon', 0)),
+                        'wheelchair_boarding': int(row.get('wheelchair_boarding', 0))
+                    })
+        
+        return jsonify({
+            'stops': tram_stops,
+            'count': len(tram_stops)
+        })
+    
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"Erreur lors du téléchargement du flux trip-update: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Erreur lors du traitement des arrêts: {str(e)}"}), 500
 
 
 @app.route('/api/vehicles')
