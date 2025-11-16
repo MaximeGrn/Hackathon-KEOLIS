@@ -19,7 +19,7 @@ const activeIncidents = [
 
 const recentActivities = [
   { id: 1, action: 'Conducteur Martin J. assigné à Tram T1-05', time: '15:45', type: 'assignment' },
-  { id: 2, action: 'Incident résolu: Ligne T1 - Station Gambetta', time: '15:30', type: 'resolved' },
+  { id: 2, action: 'Incident résolu: Ligne T1 - Station Erasme', time: '15:30', type: 'resolved' },
   { id: 3, action: 'Tram T2-08 mis en maintenance', time: '14:55', type: 'maintenance' },
   { id: 4, action: 'Réorganisation trafic ligne T2 effectuée', time: '14:40', type: 'traffic' },
 ];
