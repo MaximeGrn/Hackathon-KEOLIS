@@ -6,24 +6,50 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { MapPin, Clock, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { MapComponent } from './MapComponent';
 
+// Ligne T1 (Dijon Gare ↔ Quetigny Centre La Parenthèse) — 17 arrêts
 const stationsT1 = [
-  { id: 1, nom: 'Terminus Nord', statut: 'normal', theorique: '5 min', reel: '5 min', ecart: 0 },
-  { id: 2, nom: 'Gare Centrale', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
-  { id: 3, nom: 'République', statut: 'incident', theorique: '4 min', reel: '12 min', ecart: 8 },
-  { id: 4, nom: 'Hôtel de Ville', statut: 'retard', theorique: '5 min', reel: '7 min', ecart: 2 },
-  { id: 5, nom: 'Liberté', statut: 'normal', theorique: '4 min', reel: '4 min', ecart: 0 },
-  { id: 6, nom: 'Gambetta', statut: 'normal', theorique: '6 min', reel: '6 min', ecart: 0 },
-  { id: 7, nom: 'Terminus Sud', statut: 'normal', theorique: '5 min', reel: '5 min', ecart: 0 },
+  { id: 1, nom: 'Dijon Gare', statut: 'normal', theorique: '—', reel: '—', ecart: 0 },
+  { id: 2, nom: 'Foch Gare', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
+  { id: 3, nom: 'Darcy', statut: 'normal', theorique: '2 min', reel: '2 min', ecart: 0 },
+  { id: 4, nom: 'Godrans Les Halles', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
+  { id: 5, nom: 'République', statut: 'incident', theorique: '4 min', reel: '12 min', ecart: 8 },
+  { id: 6, nom: 'Auditorium', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
+  { id: 7, nom: 'Poincaré', statut: 'normal', theorique: '4 min', reel: '4 min', ecart: 0 },
+  { id: 8, nom: 'Grésilles Trimolet', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
+  { id: 9, nom: 'Parc des Sports', statut: 'normal', theorique: '4 min', reel: '4 min', ecart: 0 },
+  { id: 10, nom: 'CHU – Hôpitaux', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
+  { id: 11, nom: 'Erasme', statut: 'normal', theorique: '4 min', reel: '4 min', ecart: 0 },
+  { id: 12, nom: 'Université', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
+  { id: 13, nom: 'Mazen Sully', statut: 'normal', theorique: '4 min', reel: '4 min', ecart: 0 },
+  { id: 14, nom: 'Piscine Olympique', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
+  { id: 15, nom: 'Cap Vert', statut: 'normal', theorique: '4 min', reel: '4 min', ecart: 0 },
+  { id: 16, nom: 'Grand Marché', statut: 'retard', theorique: '3 min', reel: '5 min', ecart: 2 },
+  { id: 17, nom: 'Quetigny Centre La Parenthèse', statut: 'normal', theorique: '—', reel: '—', ecart: 0 },
 ];
 
+// Ligne T2 (Dijon Valmy ↔ Chenôve Centre) — 21 arrêts
 const stationsT2 = [
-  { id: 1, nom: 'Terminus Ouest', statut: 'normal', theorique: '4 min', reel: '4 min', ecart: 0 },
-  { id: 2, nom: 'Victoire', statut: 'normal', theorique: '5 min', reel: '5 min', ecart: 0 },
-  { id: 3, nom: 'Drapeau', statut: 'retard', theorique: '3 min', reel: '5 min', ecart: 2 },
-  { id: 4, nom: 'Centre Commercial', statut: 'normal', theorique: '4 min', reel: '4 min', ecart: 0 },
-  { id: 5, nom: 'Université', statut: 'normal', theorique: '6 min', reel: '6 min', ecart: 0 },
-  { id: 6, nom: 'Stade Municipal', statut: 'normal', theorique: '5 min', reel: '5 min', ecart: 0 },
-  { id: 7, nom: 'Terminus Est', statut: 'normal', theorique: '4 min', reel: '4 min', ecart: 0 },
+  { id: 1, nom: 'Dijon Valmy', statut: 'normal', theorique: '—', reel: '—', ecart: 0 },
+  { id: 2, nom: 'Giroud', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
+  { id: 3, nom: 'Pôle Santé', statut: 'normal', theorique: '2 min', reel: '2 min', ecart: 0 },
+  { id: 4, nom: 'Zénith', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
+  { id: 5, nom: "Toison d'Or", statut: 'normal', theorique: '4 min', reel: '4 min', ecart: 0 },
+  { id: 6, nom: 'Europe – Simone Veil', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
+  { id: 7, nom: 'Nation', statut: 'normal', theorique: '2 min', reel: '2 min', ecart: 0 },
+  { id: 8, nom: 'Junot', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
+  { id: 9, nom: 'Drapeau', statut: 'retard', theorique: '3 min', reel: '5 min', ecart: 2 },
+  { id: 10, nom: 'République', statut: 'normal', theorique: '2 min', reel: '2 min', ecart: 0 },
+  { id: 11, nom: 'Godrans Les Halles', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
+  { id: 12, nom: 'Darcy', statut: 'normal', theorique: '2 min', reel: '2 min', ecart: 0 },
+  { id: 13, nom: 'Foch Gare', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
+  { id: 14, nom: 'Monge – Cité de la Gastronomie', statut: 'normal', theorique: '4 min', reel: '4 min', ecart: 0 },
+  { id: 15, nom: '1er Mai', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
+  { id: 16, nom: 'Jaurès', statut: 'normal', theorique: '2 min', reel: '2 min', ecart: 0 },
+  { id: 17, nom: 'Bourroches', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
+  { id: 18, nom: 'Carraz', statut: 'normal', theorique: '4 min', reel: '4 min', ecart: 0 },
+  { id: 19, nom: 'Valendons', statut: 'normal', theorique: '3 min', reel: '3 min', ecart: 0 },
+  { id: 20, nom: 'Le Mail', statut: 'normal', theorique: '2 min', reel: '2 min', ecart: 0 },
+  { id: 21, nom: 'Chenôve Centre', statut: 'normal', theorique: '—', reel: '—', ecart: 0 },
 ];
 
 const tramsEnCirculation = [
@@ -86,7 +112,7 @@ export function ReseauPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl">12 / 14</div>
+                <div className="text-2xl">35 / 38</div>
                 <p className="text-sm text-gray-600">Stations opérationnelles</p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-600" />
@@ -129,23 +155,23 @@ export function ReseauPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <span>Schéma ligne T1</span>
+                <span>Schéma ligne T1 - Dijon Gare ↔ Quetigny Centre La Parenthèse</span>
                 <Badge variant="default">T1</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
               {/* Network Schema */}
-              <div className="relative py-8">
-                <div className="absolute top-1/2 left-0 right-0 h-1 bg-blue-600 -translate-y-1/2" />
-                <div className="flex justify-between relative">
+              <div className="relative py-12 overflow-x-auto">
+                <div className="absolute top-1/2 left-0 right-0 h-2 bg-blue-600 -translate-y-1/2 min-w-[800px]" />
+                <div className="flex justify-between relative min-w-[800px]">
                   {stationsT1.map((station, index) => (
-                    <div key={station.id} className="flex flex-col items-center">
-                      <div className={`w-4 h-4 rounded-full border-4 ${
+                    <div key={station.id} className="flex flex-col items-center flex-shrink-0" style={{ width: `${100 / stationsT1.length}%` }}>
+                      <div className={`w-8 h-8 rounded-full border-4 ${
                         station.statut === 'incident' ? 'border-red-600 bg-white' :
                         station.statut === 'retard' ? 'border-orange-600 bg-white' :
                         'border-blue-600 bg-white'
-                      } relative z-10`} />
-                      <div className="text-xs mt-2 text-center max-w-[80px] leading-tight">
+                      } relative z-10 shadow-md`} />
+                      <div className="text-xs mt-3 text-center max-w-[100px] leading-tight font-medium">
                         {station.nom}
                       </div>
                     </div>
@@ -195,23 +221,23 @@ export function ReseauPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <span>Schéma ligne T2</span>
+                <span>Schéma ligne T2 - Dijon Valmy ↔ Chenôve Centre</span>
                 <Badge variant="secondary">T2</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
               {/* Network Schema */}
-              <div className="relative py-8">
-                <div className="absolute top-1/2 left-0 right-0 h-1 bg-purple-600 -translate-y-1/2" />
-                <div className="flex justify-between relative">
+              <div className="relative py-12 overflow-x-auto">
+                <div className="absolute top-1/2 left-0 right-0 h-2 bg-purple-600 -translate-y-1/2 min-w-[1000px]" />
+                <div className="flex justify-between relative min-w-[1000px]">
                   {stationsT2.map((station, index) => (
-                    <div key={station.id} className="flex flex-col items-center">
-                      <div className={`w-4 h-4 rounded-full border-4 ${
+                    <div key={station.id} className="flex flex-col items-center flex-shrink-0" style={{ width: `${100 / stationsT2.length}%` }}>
+                      <div className={`w-8 h-8 rounded-full border-4 ${
                         station.statut === 'incident' ? 'border-red-600 bg-white' :
                         station.statut === 'retard' ? 'border-orange-600 bg-white' :
                         'border-purple-600 bg-white'
-                      } relative z-10`} />
-                      <div className="text-xs mt-2 text-center max-w-[80px] leading-tight">
+                      } relative z-10 shadow-md`} />
+                      <div className="text-xs mt-3 text-center max-w-[100px] leading-tight font-medium">
                         {station.nom}
                       </div>
                     </div>
