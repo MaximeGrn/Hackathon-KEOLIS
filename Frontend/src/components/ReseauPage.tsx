@@ -161,19 +161,27 @@ export function ReseauPage() {
             </CardHeader>
             <CardContent>
               {/* Network Schema */}
-              <div className="relative py-12 overflow-x-auto">
-                <div className="absolute top-1/2 left-0 right-0 h-2 bg-blue-600 -translate-y-1/2 min-w-[800px]" />
-                <div className="flex justify-between relative min-w-[800px]">
-                  {stationsT1.map((station, index) => (
-                    <div key={station.id} className="flex flex-col items-center flex-shrink-0" style={{ width: `${100 / stationsT1.length}%` }}>
-                      <div className={`w-8 h-8 rounded-full border-4 ${
-                        station.statut === 'incident' ? 'border-red-600 bg-white' :
-                        station.statut === 'retard' ? 'border-orange-600 bg-white' :
-                        'border-blue-600 bg-white'
-                      } relative z-10 shadow-md`} />
-                      <div className="text-xs mt-3 text-center max-w-[100px] leading-tight font-medium">
-                        {station.nom}
+              <div className="overflow-x-auto py-6">
+                {/* Couche points + ligne (hauteur fixe pour alignement parfait) */}
+                <div className="relative min-w-[800px] h-6">
+                  <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-blue-600" />
+                  <div className="flex justify-between items-center h-full">
+                    {stationsT1.map((station) => (
+                      <div key={station.id} className="flex-shrink-0" style={{ width: `${100 / stationsT1.length}%` }}>
+                        <div className={`mx-auto w-4 h-4 rounded-full ${
+                          station.statut === 'incident' ? 'bg-red-600' :
+                          station.statut === 'retard' ? 'bg-orange-600' :
+                          'bg-blue-600'
+                        } border-2 border-white shadow`} />
                       </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Labels sous la ligne */}
+                <div className="flex justify-between min-w-[800px] mt-2">
+                  {stationsT1.map((station) => (
+                    <div key={station.id} className="text-xs text-center max-w-[100px] leading-tight font-medium" style={{ width: `${100 / stationsT1.length}%` }}>
+                      {station.nom}
                     </div>
                   ))}
                 </div>
@@ -227,19 +235,27 @@ export function ReseauPage() {
             </CardHeader>
             <CardContent>
               {/* Network Schema */}
-              <div className="relative py-12 overflow-x-auto">
-                <div className="absolute top-1/2 left-0 right-0 h-2 bg-purple-600 -translate-y-1/2 min-w-[1000px]" />
-                <div className="flex justify-between relative min-w-[1000px]">
-                  {stationsT2.map((station, index) => (
-                    <div key={station.id} className="flex flex-col items-center flex-shrink-0" style={{ width: `${100 / stationsT2.length}%` }}>
-                      <div className={`w-8 h-8 rounded-full border-4 ${
-                        station.statut === 'incident' ? 'border-red-600 bg-white' :
-                        station.statut === 'retard' ? 'border-orange-600 bg-white' :
-                        'border-purple-600 bg-white'
-                      } relative z-10 shadow-md`} />
-                      <div className="text-xs mt-3 text-center max-w-[100px] leading-tight font-medium">
-                        {station.nom}
+              <div className="overflow-x-auto py-6">
+                {/* Couche points + ligne (hauteur fixe pour alignement parfait) */}
+                <div className="relative min-w-[1000px] h-6">
+                  <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-purple-600" />
+                  <div className="flex justify-between items-center h-full">
+                    {stationsT2.map((station) => (
+                      <div key={station.id} className="flex-shrink-0" style={{ width: `${100 / stationsT2.length}%` }}>
+                        <div className={`mx-auto w-4 h-4 rounded-full ${
+                          station.statut === 'incident' ? 'bg-red-600' :
+                          station.statut === 'retard' ? 'bg-orange-600' :
+                          'bg-purple-600'
+                        } border-2 border-white shadow`} />
                       </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Labels sous la ligne */}
+                <div className="flex justify-between min-w-[1000px] mt-2">
+                  {stationsT2.map((station) => (
+                    <div key={station.id} className="text-xs text-center max-w-[100px] leading-tight font-medium" style={{ width: `${100 / stationsT2.length}%` }}>
+                      {station.nom}
                     </div>
                   ))}
                 </div>
