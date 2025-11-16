@@ -4,6 +4,7 @@ Télécharge et décode le flux GTFS-RT depuis data.gouv.fr
 """
 
 from flask import Flask, render_template, jsonify
+from flask_cors import CORS
 import requests
 from google.transit import gtfs_realtime_pb2
 from datetime import datetime
@@ -12,6 +13,7 @@ import os
 import csv
 
 app = Flask(__name__)
+CORS(app)  # Autoriser les requêtes depuis le frontend React
 
 # URL du flux GTFS-RT pour les positions des véhicules Divia Dijon
 GTFS_RT_URL = "https://proxy.transport.data.gouv.fr/resource/divia-dijon-gtfs-rt-vehicle-position"
